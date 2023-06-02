@@ -44,7 +44,7 @@ namespace RESTArchitecture.DAL.Repositories
             return page != null ? list.Skip(page.Value * _pageSize).Take(_pageSize).ToList() : list;
         }
 
-        void IItemRepository.DeleteItem(int id)
+        public void DeleteItem(int id)
         {
             var path = $"{_dbPath}\\{id}{_fileFormat}";
 
@@ -56,7 +56,7 @@ namespace RESTArchitecture.DAL.Repositories
             File.Delete(path);
         }
 
-        void IItemRepository.UpdateItem(Item item)
+        public void UpdateItem(Item item)
         {
             var jsonString = JsonSerializer.Serialize(item);
             var path = $"{_dbPath}\\{item.Id}{_fileFormat}";
@@ -67,6 +67,21 @@ namespace RESTArchitecture.DAL.Repositories
             }
 
             File.WriteAllText(path, jsonString);
+        }
+
+        public Item Get(int id)
+        {
+            var path = $"{_dbPath}\\{id}{_fileFormat}";
+
+            if (!File.Exists(path))
+            {
+                throw new ArgumentException("Specified file does not exist", path);
+            }
+
+            var openedFile = File.ReadAllText(path);
+            var item = JsonSerializer.Deserialize<Item>(openedFile);
+
+            return item;
         }
     }
 }

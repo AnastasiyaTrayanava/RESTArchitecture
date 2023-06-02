@@ -16,7 +16,8 @@ namespace RESTArchitecture.Business.Services
         {
             _categoryRepository.AddCategory(new Category
             {
-                Name = category.Name
+                Name = category.Name,
+                ItemsIds = category.ItemsIds
             });
         }
 

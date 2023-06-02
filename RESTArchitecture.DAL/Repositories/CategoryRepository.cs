@@ -9,11 +9,27 @@ namespace RESTArchitecture.DAL.Repositories
     {
         private const string _dbPath = @"C:\RESTDB\Categories";
         private const string _fileFormat = ".json";
+        private readonly ItemRepository _itemRepository;
+
+        public CategoryRepository()
+        {
+            _itemRepository = new ItemRepository();
+        }
 
         public void AddCategory(Category category)
         {
             var count = Calculations.CalculateId(_dbPath); 
             category.Id = count;
+
+            foreach (var item in category.ItemsIds)
+            {
+                var filePath = $"{_dbPath}\\{item}{_fileFormat}";
+                if (!File.Exists(filePath))
+                {
+                    throw new FileNotFoundException("Specified file not found", filePath);
+                }
+            }
+
             var jsonString = JsonSerializer.Serialize(category);
             var path = $"{_dbPath}\\{count}{_fileFormat}";
 

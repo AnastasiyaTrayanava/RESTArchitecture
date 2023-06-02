@@ -8,5 +8,6 @@ namespace RESTArchitecture.Common.Interfaces
         public void UpdateItem(Item item);
         public void DeleteItem(int id);
         public void AddItem(Item item);
+        public Item Get(int id);
     }
 }
