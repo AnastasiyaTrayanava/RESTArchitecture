@@ -1,0 +1,38 @@
+﻿using RESTArchitecture.Common.Interfaces;
+using RESTArchitecture.Common.Models;
+using RESTArchitecture.DAL.Repositories;
+
+namespace RESTArchitecture.Business.Services
+{
+    public class CategoryService : ICategoryService
+    {
+        private readonly ICategoryRepository _categoryRepository;
+        public CategoryService()
+        {
+            _categoryRepository = new CategoryRepository();
+        }
+
+        public void Add(CategoryViewModel category)
+        {
+            _categoryRepository.AddCategory(new Category
+            {
+                Name = category.Name
+            });
+        }
+
+        public void Delete(int id)
+        {
+            _categoryRepository.DeleteById(id);
+        }
+
+        public List<Category> Get()
+        {
+            return _categoryRepository.GetListOfCategories();
+        }
+
+        public void Update(Category category)
+        {
+            _categoryRepository.UpdateCategory(category);
+        }
+    }
+}
