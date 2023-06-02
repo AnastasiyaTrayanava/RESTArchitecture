@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using RESTArchitecture.Common.Interfaces;
 using RESTArchitecture.Common.Models;
+using RESTArchitecture.Common.Utils;
 
 namespace RESTArchitecture.DAL.Repositories
 {
@@ -11,7 +12,7 @@ namespace RESTArchitecture.DAL.Repositories
 
         public void AddCategory(Category category)
         {
-            var count = GetCounter();
+            var count = Calculations.CalculateId(_dbPath); 
             category.Id = count;
             var jsonString = JsonSerializer.Serialize(category);
             var path = $"{_dbPath}\\{count}{_fileFormat}";
@@ -37,14 +38,14 @@ namespace RESTArchitecture.DAL.Repositories
             File.WriteAllText(path, jsonString);
         }
 
-        public List<Category> GetListOfCategories()
+        public async Task<List<Category>> GetListOfCategories(CancellationToken token)
         {
             var list = new List<Category>();
             var files = Directory.GetFiles(_dbPath);
 
-            Parallel.ForEach(files, x =>
+            await Parallel.ForEachAsync(files, async (s, token) =>
             {
-                var openedFile = File.ReadAllText(x);
+                var openedFile = await File.ReadAllTextAsync(s, token);
                 var category = JsonSerializer.Deserialize<Category>(openedFile);
                 if (category != null)
                 {
@@ -65,11 +66,6 @@ namespace RESTArchitecture.DAL.Repositories
             }
 
             File.Delete(path);
-        }
-
-        private int GetCounter()
-        {
-            return Directory.GetFiles(_dbPath).Length;
         }
     }
 }

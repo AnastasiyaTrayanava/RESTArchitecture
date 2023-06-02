@@ -16,9 +16,9 @@ namespace RESTArchitecture.Controllers
         }
 
         [HttpGet, Route("[controller]/Get")]
-        public IEnumerable<Category> Get()
+        public async Task<IEnumerable<Category>> Get()
         {
-            return _categoryService.Get();
+            return await _categoryService.Get();
         }
 
         [HttpPost, Route("[controller]/Add")]

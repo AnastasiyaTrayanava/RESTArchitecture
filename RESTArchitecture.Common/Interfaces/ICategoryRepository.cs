@@ -6,7 +6,7 @@ namespace RESTArchitecture.Common.Interfaces
     {
         public void AddCategory(Category category);
         public void UpdateCategory(Category category);
-        public List<Category> GetListOfCategories();
+        public Task<List<Category>> GetListOfCategories(CancellationToken token);
         public void DeleteById(int id);
     }
 }

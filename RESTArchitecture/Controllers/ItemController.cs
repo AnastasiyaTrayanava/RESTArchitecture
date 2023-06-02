@@ -17,9 +17,9 @@ namespace RESTArchitecture.Controllers
         }
 
         [HttpGet, Route("[controller]/Get")]
-        public IEnumerable<Item> Get(int? categoryId, int? page)
+        public async Task<IEnumerable<Item>> Get([FromQuery]ItemSearchParameters search)
         {
-            return _itemService.Get(categoryId, page);
+            return await _itemService.Get(search.CategoryId, search.Page);
         }
 
         [HttpPost, Route("[controller]/Add")]

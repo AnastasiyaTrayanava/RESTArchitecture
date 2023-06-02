@@ -25,9 +25,10 @@ namespace RESTArchitecture.Business.Services
             _categoryRepository.DeleteById(id);
         }
 
-        public List<Category> Get()
+        public async Task<List<Category>> Get()
         {
-            return _categoryRepository.GetListOfCategories();
+            var source = new CancellationTokenSource();
+            return await _categoryRepository.GetListOfCategories(source.Token);
         }
 
         public void Update(Category category)

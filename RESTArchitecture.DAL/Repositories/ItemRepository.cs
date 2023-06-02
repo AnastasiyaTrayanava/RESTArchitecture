@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using System.Text.Json;
+﻿using System.Text.Json;
 using RESTArchitecture.Common.Interfaces;
 using RESTArchitecture.Common.Models;
+using RESTArchitecture.Common.Utils;
 
 namespace RESTArchitecture.DAL.Repositories
 {
@@ -13,7 +13,7 @@ namespace RESTArchitecture.DAL.Repositories
 
         public void AddItem(Item item)
         {
-            var count = GetCounter();
+            var count = Calculations.CalculateId(_dbPath);
             item.Id = count;
             var jsonString = JsonSerializer.Serialize(item);
             var path = $"{_dbPath}\\{count}{_fileFormat}";
@@ -26,14 +26,14 @@ namespace RESTArchitecture.DAL.Repositories
             File.WriteAllText(path, jsonString);
         }
 
-        public List<Item> GetItems(int? categoryId, int? page)
+        public async Task<List<Item>> GetItems(CancellationToken token, int? categoryId = null, int? page = null)
         {
             var list = new List<Item>();
             var files = Directory.GetFiles(_dbPath);
 
-            Parallel.ForEach(files, x =>
+            await Parallel.ForEachAsync(files, async (x, token) =>
             {
-                var openedFile = File.ReadAllText(x);
+                var openedFile = await File.ReadAllTextAsync(x, token);
                 var item = JsonSerializer.Deserialize<Item>(openedFile);
                 if (item != null && item.CategoryId == categoryId)
                 {
@@ -67,11 +67,6 @@ namespace RESTArchitecture.DAL.Repositories
             }
 
             File.WriteAllText(path, jsonString);
-        }
-
-        private int GetCounter()
-        {
-            return Directory.GetFiles(_dbPath).Length;
         }
     }
 }

@@ -7,6 +7,6 @@ namespace RESTArchitecture.Common.Interfaces
         public void Add(ItemViewModel item);
         public void Update(Item item);
         public void Delete(int id);
-        public List<Item> Get(int? categoryId = null, int? page = null);
+        public Task<List<Item>> Get(int? categoryId = null, int? page = null);
     }
 }
