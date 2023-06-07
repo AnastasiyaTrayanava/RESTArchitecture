@@ -7,7 +7,6 @@ namespace RESTArchitecture.Common.Models
         public int? Id { get; set; }
         public string Name { get; set; }
         public List<int>? ItemsIds { get; set; }
-        [JsonIgnore] 
         public List<Item>? Items { get; set; } = null;
     }
 }

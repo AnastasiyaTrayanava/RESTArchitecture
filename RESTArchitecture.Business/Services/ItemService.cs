@@ -28,8 +28,7 @@ namespace RESTArchitecture.Business.Services
 
         public async Task<List<Item>> Get(int? categoryId, int? page)
         {
-            var cancellationTokenSource = new CancellationTokenSource();
-            return await _itemRepository.GetItems(cancellationTokenSource.Token, categoryId, page);
+            return await _itemRepository.GetItems(categoryId, page);
         }
 
         public void Update(Item item)

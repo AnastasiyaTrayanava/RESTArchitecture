@@ -15,36 +15,84 @@ namespace RESTArchitecture.Controllers
             _categoryService = new CategoryService();
         }
 
-        [HttpGet, Route("[controller]/Get")]
-        public async Task<IEnumerable<Category>> Get()
+        [HttpGet, Route("[controller]/GetList")]
+        public async Task<ActionResult<IEnumerable<Category>>> GetList()
         {
-            return await _categoryService.Get();
+            try
+            {
+                return Ok(await _categoryService.Get());
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
         }
 
         [HttpPost, Route("[controller]/Add")]
-        public void Add(CategoryViewModel category)
+        public IActionResult Add(CategoryViewModel category)
         {
-            if (category == null)
+            try
             {
-                throw new ArgumentNullException(nameof(category), "Submitted model is null.");
+                if (category == null)
+                {
+                    throw new ArgumentNullException(nameof(category), "Submitted model is null.");
+                }
+
+                _categoryService.Add(category);
+                return Accepted("Category has been added");
             }
-            _categoryService.Add(category);
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
         }
 
         [HttpPost, Route("[controller]/Update")]
-        public void Update(Category category)
+        public IActionResult Update(Category category)
         {
-            if (category == null)
+            try
             {
-                throw new ArgumentNullException(nameof(category), "Submitted model is null.");
+                if (category == null)
+                {
+                    throw new ArgumentNullException(nameof(category), "Submitted model is null.");
+                }
+                _categoryService.Update(category);
+                return Accepted("Category has been updated");
             }
-            _categoryService.Update(category);
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (FileNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
         }
 
         [HttpDelete, Route("[controller]/Delete")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
-            _categoryService.Delete(id);
+            try
+            {
+                _categoryService.Delete(id);
+                return Ok();
+            }
+            catch (FileNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
         }
     }
 }

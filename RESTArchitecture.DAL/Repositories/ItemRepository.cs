@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Newtonsoft.Json.Linq;
 using RESTArchitecture.Common.Interfaces;
 using RESTArchitecture.Common.Models;
 using RESTArchitecture.Common.Utils;
@@ -26,20 +27,20 @@ namespace RESTArchitecture.DAL.Repositories
             File.WriteAllText(path, jsonString);
         }
 
-        public async Task<List<Item>> GetItems(CancellationToken token, int? categoryId = null, int? page = null)
+        public async Task<List<Item>> GetItems(int? categoryId = null, int? page = null)
         {
             var list = new List<Item>();
             var files = Directory.GetFiles(_dbPath);
 
-            await Parallel.ForEachAsync(files, async (x, token) =>
+            foreach (var file in files)
             {
-                var openedFile = await File.ReadAllTextAsync(x, token);
+                var openedFile = await File.ReadAllTextAsync(file);
                 var item = JsonSerializer.Deserialize<Item>(openedFile);
-                if (item != null && item.CategoryId == categoryId)
+                if (item != null && (categoryId != null && item.CategoryId.Equals(categoryId) || categoryId == null))
                 {
                     list.Add(item);
                 }
-            });
+            }
 
             return page != null ? list.Skip(page.Value * _pageSize).Take(_pageSize).ToList() : list;
         }
@@ -69,7 +70,7 @@ namespace RESTArchitecture.DAL.Repositories
             File.WriteAllText(path, jsonString);
         }
 
-        public Item Get(int id)
+        public async Task<Item> GetById(int id)
         {
             var path = $"{_dbPath}\\{id}{_fileFormat}";
 
@@ -78,7 +79,7 @@ namespace RESTArchitecture.DAL.Repositories
                 throw new ArgumentException("Specified file does not exist", path);
             }
 
-            var openedFile = File.ReadAllText(path);
+            var openedFile = await File.ReadAllTextAsync(path);
             var item = JsonSerializer.Deserialize<Item>(openedFile);
 
             return item;

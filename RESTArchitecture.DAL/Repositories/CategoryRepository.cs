@@ -9,7 +9,7 @@ namespace RESTArchitecture.DAL.Repositories
     {
         private const string _dbPath = @"C:\RESTDB\Categories";
         private const string _fileFormat = ".json";
-        private readonly ItemRepository _itemRepository;
+        private readonly IItemRepository _itemRepository;
 
         public CategoryRepository()
         {
@@ -21,13 +21,9 @@ namespace RESTArchitecture.DAL.Repositories
             var count = Calculations.CalculateId(_dbPath); 
             category.Id = count;
 
-            foreach (var item in category.ItemsIds)
+            if (category.ItemsIds != null && category.ItemsIds.Any())
             {
-                var filePath = $"{_dbPath}\\{item}{_fileFormat}";
-                if (!File.Exists(filePath))
-                {
-                    throw new FileNotFoundException("Specified file not found", filePath);
-                }
+                CheckIfIdsExist(category.ItemsIds);
             }
 
             var jsonString = JsonSerializer.Serialize(category);
@@ -59,15 +55,24 @@ namespace RESTArchitecture.DAL.Repositories
             var list = new List<Category>();
             var files = Directory.GetFiles(_dbPath);
 
-            await Parallel.ForEachAsync(files, async (s, token) =>
+            foreach (var file in files)
             {
-                var openedFile = await File.ReadAllTextAsync(s, token);
+                var openedFile = await File.ReadAllTextAsync(file, token);
                 var category = JsonSerializer.Deserialize<Category>(openedFile);
-                if (category != null)
+
+                if (category == null) continue;
+                if (category.ItemsIds != null)
                 {
-                    list.Add(category);
+                    foreach (var id in category.ItemsIds)
+                    {
+                        var item = await _itemRepository.GetById(id);
+                        category.Items ??= new List<Item>();
+                        category.Items.Add(item);
+                    }
                 }
-            });
+
+                list.Add(category);
+            }
 
             return list;
         }
@@ -82,6 +87,18 @@ namespace RESTArchitecture.DAL.Repositories
             }
 
             File.Delete(path);
+        }
+
+        private static void CheckIfIdsExist(List<int> ids)
+        {
+            foreach (var id in ids)
+            {
+                var filePath = $"{_dbPath}\\{id}{_fileFormat}";
+                if (!File.Exists(filePath))
+                {
+                    throw new FileNotFoundException("Specified file not found", filePath);
+                }
+            }
         }
     }
 }

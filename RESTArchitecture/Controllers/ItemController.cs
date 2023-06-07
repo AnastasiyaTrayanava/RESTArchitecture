@@ -16,36 +16,84 @@ namespace RESTArchitecture.Controllers
             _itemService = new ItemService();
         }
 
-        [HttpGet, Route("[controller]/Get")]
-        public async Task<IEnumerable<Item>> Get([FromQuery]ItemSearchParameters search)
+        [HttpGet, Route("[controller]/GetList")]
+        public async Task<ActionResult<IEnumerable<Item>>> GetList([FromQuery]ItemSearchParameters search)
         {
-            return await _itemService.Get(search.CategoryId, search.Page);
+            try
+            {
+                return Ok(await _itemService.Get(search.CategoryId, search.Page));
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
         }
 
         [HttpPost, Route("[controller]/Add")]
-        public void Add(ItemViewModel item)
+        public IActionResult Add(ItemViewModel item)
         {
-            if (item == null)
+            try
             {
-                throw new ArgumentNullException(nameof(item), "Submitted value is null.");
+                if (item == null)
+                {
+                    throw new ArgumentNullException(nameof(item), "Submitted value is null.");
+                }
+                _itemService.Add(item);
+                return Ok();
             }
-            _itemService.Add(item);
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
         }
 
         [HttpPost, Route("[controller]/Update")]
-        public void Update(Item item)
+        public IActionResult Update(Item item)
         {
-            if (item == null)
+            try
             {
-                throw new ArgumentNullException(nameof(item), "Submitted value is null.");
+                if (item == null)
+                {
+                    throw new ArgumentNullException(nameof(item), "Submitted value is null.");
+                }
+
+                _itemService.Update(item);
+                return Ok();
             }
-            _itemService.Update(item);
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (FileNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
         }
 
         [HttpDelete, Route("[controller]/Delete")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
-            _itemService.Delete(id);
+            try
+            {
+                _itemService.Delete(id);
+                return Ok();
+            }
+            catch (FileNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
         }
     }
 }
